@@ -3,8 +3,16 @@ name: Web App Selenium Testing
 on:
   push:
     branches: [ main, master ]
+    paths:
+      - 'client/**'
+      - 'PerioTwinE2E/**'
+      - '.github/workflows/selenium-test.yml'
   pull_request:
     branches: [ main, master ]
+    paths:
+      - 'client/**'
+      - 'PerioTwinE2E/**'
+      - '.github/workflows/selenium-test.yml'
   workflow_dispatch:
 
 permissions:
