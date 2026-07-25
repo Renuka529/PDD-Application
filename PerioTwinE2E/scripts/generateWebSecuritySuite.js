@@ -273,7 +273,7 @@ Audit results reveal that the PerioTwin React client application exhibits a **Lo
 3. **HTTP Controls**: Inject a modern Content Security Policy meta rule inside index.html to control external scripting execution models.
 `;
 
-  const summaryPath = path.join(reportDir, 'web-executive-summary.md');
+  const summaryPath = path.join(reportDir, 'web-security-summary.md');
   fs.writeFileSync(summaryPath, mdSummary);
   console.log(`Saved Web Security Executive Summary MD to: ${summaryPath}`);
 }
