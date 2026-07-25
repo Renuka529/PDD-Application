@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Node / React
+node_modules/
+dist/
+.vite/
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+*.g.dart
+*.freezed.dart
+
+# Android
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/android/build/
+mobile/android/local.properties
+mobile/android/key.properties
+
+# iOS
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db
