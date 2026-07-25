@@ -1,4 +1,4 @@
-name: Web Application Selenium Testing
+name: Web Application Testing
 
 on:
   push:
