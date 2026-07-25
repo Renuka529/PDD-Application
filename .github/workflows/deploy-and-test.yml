@@ -86,6 +86,12 @@ jobs:
             echo "E2E Run completed. Reports generated." >> $GITHUB_STEP_SUMMARY
           fi
 
+      - name: Upload Excel Test Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Selenium-E2E-Excel-Report
+          path: PerioTwinE2E/Test_Results/*.xlsx
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
