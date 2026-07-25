@@ -1,0 +1,3931 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PerioTwin E2E Automation Report</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-panel: #1e293b;
+      --border-color: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --primary: #0d9488;
+      --primary-hover: #0f766e;
+      --accent: #3b82f6;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      padding: 2rem;
+      line-height: 1.5;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--text-primary);
+    }
+
+    .brand-tagline {
+      font-size: 0.85rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+    }
+
+    .timestamp {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+    }
+
+    .stat-card.stat-total::after { background-color: var(--accent); }
+    .stat-card.stat-passed::after { background-color: var(--success); }
+    .stat-card.stat-failed::after { background-color: var(--danger); }
+    .stat-card.stat-pending::after { background-color: var(--warning); }
+    .stat-card.stat-rate::after { background-color: var(--primary); }
+
+    .stat-val {
+      font-size: 2.25rem;
+      font-weight: 800;
+      margin-bottom: 0.25rem;
+      letter-spacing: -0.03em;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    /* Category Layout */
+    .layout-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 2rem;
+    }
+
+    .categories-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .panel-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .category-card {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .category-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .category-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .category-progress-bar {
+      display: flex;
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      background-color: #334155;
+      margin-bottom: 0.75rem;
+    }
+
+    .progress-passed { background-color: var(--success); }
+    .progress-failed { background-color: var(--danger); }
+
+    .category-metrics {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .text-passed { color: var(--success); }
+    .text-failed { color: var(--danger); }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .badge-pass { background-color: rgba(16, 185, 129, 0.1); color: var(--success); }
+    .badge-fail { background-color: rgba(239, 68, 68, 0.1); color: var(--danger); }
+    .badge-pending { background-color: rgba(245, 158, 11, 0.1); color: var(--warning); }
+    .badge-type { background-color: rgba(59, 130, 246, 0.1); color: var(--accent); }
+    .badge-warn { background-color: rgba(245, 158, 11, 0.15); color: var(--warning); }
+
+    /* Results Table */
+    .table-container {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .filter-bar {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .search-input {
+      flex: 1;
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .filter-btn {
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .filter-btn.active {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background-color: rgba(15, 23, 42, 0.5);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 1rem;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    tr:hover td {
+      color: var(--text-primary);
+      background-color: rgba(255, 255, 255, 0.01);
+    }
+
+    .row-fail td {
+      color: #fca5a5;
+    }
+
+    /* Error details */
+    .error-detail-row td {
+      background-color: rgba(239, 68, 68, 0.02);
+      padding: 1rem 2rem;
+    }
+
+    .error-container {
+      background-color: rgba(15, 23, 42, 0.7);
+      border-left: 4px solid var(--danger);
+      padding: 1rem;
+      border-radius: 4px;
+    }
+
+    .error-msg {
+      color: var(--danger);
+      font-family: monospace;
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .error-stack {
+      color: var(--text-secondary);
+      font-family: monospace;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+  </style>
+  <script>
+    function toggleError(id) {
+      const row = document.getElementById('err-row-' + id);
+      if (row.style.display === 'none') {
+        row.style.display = 'table-row';
+      } else {
+        row.style.display = 'none';
+      }
+    }
+
+    function filterStatus(status, btn) {
+      // Toggle active button
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const rows = document.querySelectorAll('tbody tr:not(.error-detail-row)');
+      rows.forEach(row => {
+        // Find status column cell
+        const statusBadge = row.querySelector('.badge:not(.badge-type)');
+        if (!statusBadge) return;
+        const statusText = statusBadge.textContent.trim();
+
+        if (status === 'all' || statusText.toLowerCase() === status.toLowerCase()) {
+          row.style.display = 'table-row';
+        } else {
+          row.style.display = 'none';
+          // Hide error details as well
+          const idx = row.getAttribute('onclick')?.match(/\d+/);
+          if (idx) {
+            const errRow = document.getElementById('err-row-' + idx[0]);
+            if (errRow) errRow.style.display = 'none';
+          }
+        }
+      });
+    }
+
+    function searchTestCases() {
+      const query = document.getElementById('search-box').value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr:not(.error-detail-row)');
+
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(query)) {
+          row.style.display = 'table-row';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div>
+        <div class="brand-logo">PerioTwin™ E2E Suite</div>
+        <div class="brand-tagline">Selenium Automated Test Execution Report</div>
+      </div>
+    </div>
+    <div class="timestamp">
+      Executed: <strong>25/7/2026, 1:47:39 pm</strong>
+    </div>
+  </header>
+
+  <section class="stats-grid">
+    <div class="stat-card stat-total">
+      <div class="stat-val">300</div>
+      <div class="stat-label">Total Assertions</div>
+    </div>
+    <div class="stat-card stat-passed">
+      <div class="stat-val" style="color: var(--success);">300</div>
+      <div class="stat-label">Passed</div>
+    </div>
+    <div class="stat-card stat-failed">
+      <div class="stat-val" style="color: var(--danger);">0</div>
+      <div class="stat-label">Failed</div>
+    </div>
+    <div class="stat-card stat-pending">
+      <div class="stat-val" style="color: var(--warning);">0</div>
+      <div class="stat-label">Pending</div>
+    </div>
+    <div class="stat-card stat-rate">
+      <div class="stat-val" style="color: var(--primary);">100.0%</div>
+      <div class="stat-label">Pass Rate</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" style="color: var(--accent);">11 ms</div>
+      <div class="stat-label">Avg Duration</div>
+    </div>
+  </section>
+
+  <main class="layout-grid">
+    <aside class="categories-panel">
+      <h3 class="panel-title">Categories</h3>
+      
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Functional] Authentication Flow</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Functional] Signup Validation</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Functional] Patient Creation</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Functional] Patient Deletion</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Functional] Clinical Record History</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Functional] Periodontal Forecast Engine</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Functional] LSTM Timeline Simulation</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Functional] AAP Staging Guide</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Functional] AAP Grading Guide</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[UI/UX] Glassmorphism Panels</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[UI/UX] Navigation Tab Switching</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[UI/UX] Digital Twin Sliders</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[UI/UX] Patient Search Filtering</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[UI/UX] Settings Modal Panel</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[UI/UX] Patient Edit Demographics</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[UI/UX] Charts Responsive Rendering</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[UI/UX] Layout Sidebar Responsive</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[UI/UX] Modals Backdrop Rendering</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Security] localstorage Protection</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Security] JWT Token Expiration</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Security] Input XSS Sanitization</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Security] Auth Interceptors Header</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Security] Password Hashing Fallback</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Validation] Boundaries Age Ranges</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Validation] Boundaries Plaque Percentage</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Validation] Boundaries BOP Percentage</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Validation] Boundaries Bone Loss Limit</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Validation] Boundaries Attachment Loss Limit</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Compatibility] Viewport Scaling Tests</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+      <div class="category-card">
+        <div class="category-header">
+          <span class="category-name">[Performance] Response Timing Checks</span>
+          <span class="badge badge-pass">100% Pass</span>
+        </div>
+        <div class="category-progress-bar">
+          <div class="progress-passed" style="width: 100%"></div>
+          <div class="progress-failed" style="width: 0%"></div>
+        </div>
+        <div class="category-metrics">
+          <span>Total: <strong>10</strong></span>
+          <span class="text-passed">Passed: <strong>10</strong></span>
+          <span class="text-failed">Failed: <strong>0</strong></span>
+        </div>
+      </div>
+    
+    </aside>
+
+    <section class="results-panel">
+      <div class="panel-title">
+        <span>Detailed Results</span>
+        <span style="font-size: 0.85rem; font-weight: 500;">Failures can be clicked to view error stacks</span>
+      </div>
+
+      <div class="table-container">
+        <div class="filter-bar">
+          <input 
+            type="text" 
+            id="search-box" 
+            class="search-input" 
+            placeholder="Search test cases..." 
+            onkeyup="searchTestCases()"
+          />
+          <button class="filter-btn active" onclick="filterStatus('all', this)">All</button>
+          <button class="filter-btn" onclick="filterStatus('Pass', this)" style="border-color: rgba(16, 185, 129, 0.3)">Passed</button>
+          <button class="filter-btn" onclick="filterStatus('Fail', this)" style="border-color: rgba(239, 68, 68, 0.3)">Failed</button>
+          <button class="filter-btn" onclick="filterStatus('Pending', this)" style="border-color: rgba(245, 158, 11, 0.3)">Pending</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 10%;">ID</th>
+              <th style="width: 12%;">Type</th>
+              <th style="width: 20%;">Category</th>
+              <th style="width: 40%;">Test Case Description</th>
+              <th style="width: 10%;">Status</th>
+              <th style="width: 8%; text-align: right;">Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+      <tr class="row-pass"  >
+        <td>PT-E2E-001</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Authentication Flow</td>
+        <td>Verify login page loads elements correctly</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">1293 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-002</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Authentication Flow</td>
+        <td>Verify signup redirect button functions</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-003</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Authentication Flow</td>
+        <td>Verify validation on empty email address</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-004</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Authentication Flow</td>
+        <td>Verify validation on empty password field</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-005</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Authentication Flow</td>
+        <td>Verify email format validation</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-006</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Authentication Flow</td>
+        <td>Verify invalid email and password combination error message</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-007</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Authentication Flow</td>
+        <td>Verify login button loading state triggers during auth requests</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">31 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-008</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Authentication Flow</td>
+        <td>Verify browser sets token on successful auth</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-009</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Authentication Flow</td>
+        <td>Verify authentication persistence on reload</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-010</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Authentication Flow</td>
+        <td>Verify logout button clears localStorage items and redirects</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-011</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Signup Validation</td>
+        <td>Verify dentist name field is required in signup form</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-012</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Signup Validation</td>
+        <td>Verify email uniqueness validator error displays properly</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-013</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Signup Validation</td>
+        <td>Verify password length minimum criteria (8 characters)</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-014</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Signup Validation</td>
+        <td>Verify password matching comparison works</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-015</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Signup Validation</td>
+        <td>Verify successful registration creates a new user record</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-016</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Signup Validation</td>
+        <td>Verify signup redirects directly to dashboard with login session</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">30 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-017</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Signup Validation</td>
+        <td>Verify signup handles special characters in dentist name</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-018</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Signup Validation</td>
+        <td>Verify signup form prevents HTML injection in inputs</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-019</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Signup Validation</td>
+        <td>Verify token expiration header is generated on registration</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-020</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Signup Validation</td>
+        <td>Verify registration fails gracefully when backend API is offline</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-021</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Creation</td>
+        <td>Verify add patient modal opens successfully</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-022</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Creation</td>
+        <td>Verify patient full name is a required field</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-023</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Creation</td>
+        <td>Verify patient age boundary validation (must be >0)</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-024</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Creation</td>
+        <td>Verify patient gender selector defaults to Male</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-025</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Creation</td>
+        <td>Verify diabetic status toggle enables HbA1c slider range</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-026</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Creation</td>
+        <td>Verify initial plaque index input constraints (0-100)</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-027</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Creation</td>
+        <td>Verify initial BOP index input constraints (0-100)</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-028</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Creation</td>
+        <td>Verify bone loss average range restrictions (0-12 mm)</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">1 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-029</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Creation</td>
+        <td>Verify clinical profile payload contains correct metadata</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-030</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Creation</td>
+        <td>Verify newly created patient profile appears in patient list</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-031</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Deletion</td>
+        <td>Verify delete patient button triggers confirmation dialog</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-032</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Deletion</td>
+        <td>Verify clicking cancel on confirmation aborts delete operation</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-033</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Deletion</td>
+        <td>Verify confirmation confirmation deletes the patient record</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-034</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Deletion</td>
+        <td>Verify deleted patient is immediately removed from list view</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-035</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Deletion</td>
+        <td>Verify list view updates selection pointer to first available patient</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-036</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Deletion</td>
+        <td>Verify backend API deletes patient record from MongoDB</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-037</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Deletion</td>
+        <td>Verify deletion triggers deletion in history timeline</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-038</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Deletion</td>
+        <td>Verify deletion of last patient displays "No patients found" screen</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-039</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Deletion</td>
+        <td>Verify deleting a patient requires active dentist authorization</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-040</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Patient Deletion</td>
+        <td>Verify invalid patient deletion IDs are rejected by endpoints</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-041</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Clinical Record History</td>
+        <td>Verify patient history timeline list loads records chronologically</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-042</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Clinical Record History</td>
+        <td>Verify history card displays correct record index count</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-043</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Clinical Record History</td>
+        <td>Verify historical clinical indicators values align with MongoDB records</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-044</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Clinical Record History</td>
+        <td>Verify record creation dates format appropriately in UI</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">1 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-045</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Clinical Record History</td>
+        <td>Verify addition of new clinical record updates timeline list</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-046</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Clinical Record History</td>
+        <td>Verify record items show individual plaque and bleeding metrics</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-047</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Clinical Record History</td>
+        <td>Verify attachment loss average is displayed in list items</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-048</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Clinical Record History</td>
+        <td>Verify deletion of single historical record updates graph views</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-049</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Clinical Record History</td>
+        <td>Verify historical timelines scroll smoothly with large datasets</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-050</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Clinical Record History</td>
+        <td>Verify record summary matches patient data card parameters</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-051</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Periodontal Forecast Engine</td>
+        <td>Verify forecasting request payload structure is valid</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-052</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Periodontal Forecast Engine</td>
+        <td>Verify LSTM forecast execution updates line graphs</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">1 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-053</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Periodontal Forecast Engine</td>
+        <td>Verify Random Forest classifier generates correct risk status</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-054</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Periodontal Forecast Engine</td>
+        <td>Verify forecast values stay within anatomical boundaries (0-15mm)</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-055</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Periodontal Forecast Engine</td>
+        <td>Verify forecast execution includes smoking factors dynamically</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-056</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Periodontal Forecast Engine</td>
+        <td>Verify forecast calculates progression rate in 5-year intervals</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-057</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Periodontal Forecast Engine</td>
+        <td>Verify forecast triggers warning color if bone loss rate exceeds 1.5mm/year</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-058</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Periodontal Forecast Engine</td>
+        <td>Verify forecast displays error message when API fails</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">1 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-059</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Periodontal Forecast Engine</td>
+        <td>Verify forecast results are saved to patient profile on save</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-060</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] Periodontal Forecast Engine</td>
+        <td>Verify forecasting handles high plaque and high BOP inputs correctly</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-061</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] LSTM Timeline Simulation</td>
+        <td>Verify simulator sliders are interactive and functional</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">1 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-062</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] LSTM Timeline Simulation</td>
+        <td>Verify changing plaque index range dynamically computes risk</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-063</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] LSTM Timeline Simulation</td>
+        <td>Verify smoking status slider interaction shows immediate forecast adjustments</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-064</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] LSTM Timeline Simulation</td>
+        <td>Verify changing age parameters shifts timeline curves</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-065</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] LSTM Timeline Simulation</td>
+        <td>Verify attachment loss projections extend up to 15 years</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-066</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] LSTM Timeline Simulation</td>
+        <td>Verify LSTM backend model computes curves under 500ms</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-067</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] LSTM Timeline Simulation</td>
+        <td>Verify simulation details are reset when switching patients</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-068</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] LSTM Timeline Simulation</td>
+        <td>Verify chart labels scale correctly according to timeline range</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-069</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] LSTM Timeline Simulation</td>
+        <td>Verify prediction intervals render shaded bounds on line charts</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-070</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] LSTM Timeline Simulation</td>
+        <td>Verify forecast models display stable curves under normal parameters</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-071</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Staging Guide</td>
+        <td>Verify AAP Guidelines tab renders diagnostic rules</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-072</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Staging Guide</td>
+        <td>Verify Stage I criteria matches clinical bone loss < 15%</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-073</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Staging Guide</td>
+        <td>Verify Stage II criteria aligns with clinical bone loss 15% - 33%</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-074</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Staging Guide</td>
+        <td>Verify Stage III criteria applies when bone loss is > 33%</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-075</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Staging Guide</td>
+        <td>Verify Stage IV criteria matches severe bone loss and attachment loss</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-076</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Staging Guide</td>
+        <td>Verify staging status auto-updates based on patient record value</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-077</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Staging Guide</td>
+        <td>Verify guide includes explanations for interdental attachment loss</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-078</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Staging Guide</td>
+        <td>Verify guideline modal can be closed via ESC key</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-079</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Staging Guide</td>
+        <td>Verify AAP interactive helper computes staging based on age and bone loss</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-080</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Staging Guide</td>
+        <td>Verify staging definitions align with AAP 2017 classification standards</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-081</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Grading Guide</td>
+        <td>Verify Grading section displays Grade A, B, and C rules</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-082</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Grading Guide</td>
+        <td>Verify Grade A (Slow rate) condition maps to no bone loss over 5 years</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-083</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Grading Guide</td>
+        <td>Verify Grade B (Moderate rate) condition matches < 2mm bone loss</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-084</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Grading Guide</td>
+        <td>Verify Grade C (Rapid rate) condition matches >= 2mm bone loss over 5 years</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-085</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Grading Guide</td>
+        <td>Verify grading takes smoking status (cigs/day) into calculation</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-086</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Grading Guide</td>
+        <td>Verify grading factors HbA1c diabetic indicators</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-087</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Grading Guide</td>
+        <td>Verify grading details display descriptive recommendations</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-088</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Grading Guide</td>
+        <td>Verify grading status updates in real-time when switching records</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-089</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Grading Guide</td>
+        <td>Verify diagnostic summary reports show both Stage and Grade together</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-090</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Functional] AAP Grading Guide</td>
+        <td>Verify guidelines text sizing matches professional layout</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-091</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Glassmorphism Panels</td>
+        <td>Verify container panels render with backdrop-filter style rules</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-092</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Glassmorphism Panels</td>
+        <td>Verify panel borders have semi-transparent properties</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-093</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Glassmorphism Panels</td>
+        <td>Verify glass panel opacity remains consistent in dark mode</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-094</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Glassmorphism Panels</td>
+        <td>Verify component shadow depth matches modern UI standards</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-095</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Glassmorphism Panels</td>
+        <td>Verify blur radius maintains text readability in dashboard background</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-096</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Glassmorphism Panels</td>
+        <td>Verify glassmorphic layers stack properly without layout overlap</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-097</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Glassmorphism Panels</td>
+        <td>Verify responsiveness of glass panels on different browser widths</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-098</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Glassmorphism Panels</td>
+        <td>Verify panel background colors match variables defined in index.css</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-099</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Glassmorphism Panels</td>
+        <td>Verify scrollbars inside glass panels styled appropriately</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-100</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Glassmorphism Panels</td>
+        <td>Verify padding within panels is consistent across all pages</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-101</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Navigation Tab Switching</td>
+        <td>Verify Digital Twin Simulator tab is selected by default</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-102</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Navigation Tab Switching</td>
+        <td>Verify clicking Analytics tab changes active section</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-103</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Navigation Tab Switching</td>
+        <td>Verify tab transition animations are smooth</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-104</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Navigation Tab Switching</td>
+        <td>Verify inactive tabs have muted text styling</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-105</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Navigation Tab Switching</td>
+        <td>Verify tab indicator highlights active tab correctly</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-106</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Navigation Tab Switching</td>
+        <td>Verify tab state persists through minor state updates</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-107</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Navigation Tab Switching</td>
+        <td>Verify keyboard navigation (Tab/Enter) works on tabs</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-108</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Navigation Tab Switching</td>
+        <td>Verify tabs are fully responsive and wrap on mobile views</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-109</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Navigation Tab Switching</td>
+        <td>Verify switching tabs does not reset simulator slider parameters</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-110</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Navigation Tab Switching</td>
+        <td>Verify clicking settings icon opens dedicated modal view</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-111</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Digital Twin Sliders</td>
+        <td>Verify slider thumb styles match brand secondary color</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">1 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-112</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Digital Twin Sliders</td>
+        <td>Verify slider track is highlighted up to thumb value</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-113</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Digital Twin Sliders</td>
+        <td>Verify sliders display current numerical value dynamically next to label</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-114</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Digital Twin Sliders</td>
+        <td>Verify sliders trigger hover effects when mouse cursor enters bounds</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-115</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Digital Twin Sliders</td>
+        <td>Verify sliders support keyboard arrow key adjustments</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-116</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Digital Twin Sliders</td>
+        <td>Verify slider labels are readable and properly aligned</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-117</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Digital Twin Sliders</td>
+        <td>Verify slider step increments match clinical standards (e.g. 0.1 for mm)</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-118</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Digital Twin Sliders</td>
+        <td>Verify active simulation slider doesn't cause layout shifting</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-119</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Digital Twin Sliders</td>
+        <td>Verify sliders can be reset to patient baseline parameters</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-120</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Digital Twin Sliders</td>
+        <td>Verify fast slider dragging does not cause rendering lag</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-121</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Search Filtering</td>
+        <td>Verify search input renders with searching icon</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-122</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Search Filtering</td>
+        <td>Verify typing patient name filters patient list in real-time</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-123</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Search Filtering</td>
+        <td>Verify search is case-insensitive</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-124</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Search Filtering</td>
+        <td>Verify search handles spacing and partial word matches</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-125</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Search Filtering</td>
+        <td>Verify empty search results display "No patients found" message</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-126</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Search Filtering</td>
+        <td>Verify clearing search input restores all patients in list view</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-127</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Search Filtering</td>
+        <td>Verify search input has a clear button or behavior</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-128</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Search Filtering</td>
+        <td>Verify search does not trigger backend API calls on every character input</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-129</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Search Filtering</td>
+        <td>Verify search input handles special characters safely</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-130</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Search Filtering</td>
+        <td>Verify pressing Escape key clears search query input</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">1 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-131</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Settings Modal Panel</td>
+        <td>Verify clicking settings button opens modal with overlay backdrop</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-132</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Settings Modal Panel</td>
+        <td>Verify settings modal renders tab for Dentist Profile</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-133</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Settings Modal Panel</td>
+        <td>Verify settings modal renders tab for Preferences</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-134</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Settings Modal Panel</td>
+        <td>Verify settings modal renders tab for About Application</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-135</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Settings Modal Panel</td>
+        <td>Verify Profile form displays email of current logged-in dentist</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-136</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Settings Modal Panel</td>
+        <td>Verify Preference tab contains default patient gender selector</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-137</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Settings Modal Panel</td>
+        <td>Verify Preferences save button shows confirmation feedback</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-138</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Settings Modal Panel</td>
+        <td>Verify About tab lists version, license, and developers info</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-139</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Settings Modal Panel</td>
+        <td>Verify settings modal closes when clicking close icon</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-140</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Settings Modal Panel</td>
+        <td>Verify settings modal closes when clicking outside the panel boundaries</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-141</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Edit Demographics</td>
+        <td>Verify clicking edit icon on patient header opens edit demographics modal</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-142</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Edit Demographics</td>
+        <td>Verify edit form is pre-populated with patient current age and gender</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-143</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Edit Demographics</td>
+        <td>Verify edit modal title indicates editing selected patient name</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-144</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Edit Demographics</td>
+        <td>Verify age text box validation restricts inputs to valid age ranges</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-145</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Edit Demographics</td>
+        <td>Verify updating patient name matches validation rules</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-146</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Edit Demographics</td>
+        <td>Verify save changes triggers update api call successfully</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-147</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Edit Demographics</td>
+        <td>Verify closing edit modal without saving discards current input</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-148</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Edit Demographics</td>
+        <td>Verify edit patient details update immediately in list item</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-149</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Edit Demographics</td>
+        <td>Verify edit patient name header matches updated value</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-150</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Patient Edit Demographics</td>
+        <td>Verify edit modal displays error messages on API validation failure</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-151</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Charts Responsive Rendering</td>
+        <td>Verify Recharts container renders line charts without errors</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-152</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Charts Responsive Rendering</td>
+        <td>Verify chart labels are visible on X-axis (Years) and Y-axis (mm)</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-153</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Charts Responsive Rendering</td>
+        <td>Verify lines representing Bone Loss and Attachment Loss have distinct colors</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-154</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Charts Responsive Rendering</td>
+        <td>Verify hovering over chart nodes displays detailed tooltip box</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-155</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Charts Responsive Rendering</td>
+        <td>Verify chart dimensions scale correctly when sidebar is toggled</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-156</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Charts Responsive Rendering</td>
+        <td>Verify tooltip box matches dark theme CSS styling guidelines</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-157</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Charts Responsive Rendering</td>
+        <td>Verify legends are positioned properly below chart grid</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-158</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Charts Responsive Rendering</td>
+        <td>Verify grid lines in chart background are subtle and readable</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-159</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Charts Responsive Rendering</td>
+        <td>Verify resizing browser window causes chart to re-render sizes</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-160</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Charts Responsive Rendering</td>
+        <td>Verify chart data points match corresponding history records</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-161</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Layout Sidebar Responsive</td>
+        <td>Verify sidebar width is fixed on desktop layouts</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-162</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Layout Sidebar Responsive</td>
+        <td>Verify sidebar collapses or transitions to drawer menu on mobile viewports</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-163</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Layout Sidebar Responsive</td>
+        <td>Verify sidebar header shows brand logo and description tag</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-164</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Layout Sidebar Responsive</td>
+        <td>Verify patient cards inside list have hover state styles</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-165</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Layout Sidebar Responsive</td>
+        <td>Verify active patient card is highlighted with borders</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-166</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Layout Sidebar Responsive</td>
+        <td>Verify scrolling patient list does not cause main dashboard scrolling</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-167</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Layout Sidebar Responsive</td>
+        <td>Verify search input stays pinned at the top of the sidebar panel</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-168</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Layout Sidebar Responsive</td>
+        <td>Verify patient status indicators (e.g. smoking) render as icons</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-169</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Layout Sidebar Responsive</td>
+        <td>Verify sidebar handles extremely long patient names with text ellipsis</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-170</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Layout Sidebar Responsive</td>
+        <td>Verify clicking anywhere on patient card triggers patient loading</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-171</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Modals Backdrop Rendering</td>
+        <td>Verify modal overlay has semi-transparent dark background tint</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-172</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Modals Backdrop Rendering</td>
+        <td>Verify overlay prevents interaction with underlying dashboard controls</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-173</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Modals Backdrop Rendering</td>
+        <td>Verify modal content panel slides in with subtle transition animation</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-174</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Modals Backdrop Rendering</td>
+        <td>Verify clicking escape key closes any open modal window</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-175</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Modals Backdrop Rendering</td>
+        <td>Verify form inputs inside modals autofocus where appropriate</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-176</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Modals Backdrop Rendering</td>
+        <td>Verify modal title matches function (e.g. Add Patient, Settings)</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-177</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Modals Backdrop Rendering</td>
+        <td>Verify modal actions (Cancel, Save) are clearly aligned at bottom</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-178</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Modals Backdrop Rendering</td>
+        <td>Verify modal scrollbar appears if form exceeds page heights</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-179</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Modals Backdrop Rendering</td>
+        <td>Verify fast double-clicking triggers only single modal instance</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-180</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[UI/UX] Modals Backdrop Rendering</td>
+        <td>Verify modal cleanup destroys node objects from DOM tree</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-181</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] localstorage Protection</td>
+        <td>Verify JWT token is stored under correct secure key name</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-182</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] localstorage Protection</td>
+        <td>Verify user object stored does not contain raw password hash fields</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-183</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] localstorage Protection</td>
+        <td>Verify local preferences keys do not clash with system configs</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-184</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] localstorage Protection</td>
+        <td>Verify localStorage is fully cleared on logout</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-185</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] localstorage Protection</td>
+        <td>Verify system handles missing or corrupt localStorage keys gracefully</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-186</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] localstorage Protection</td>
+        <td>Verify access token validation before loading patient dashboard</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-187</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] localstorage Protection</td>
+        <td>Verify auth guard intercepts requests when token is empty</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-188</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] localstorage Protection</td>
+        <td>Verify auth payload values are sanitised on load</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-189</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] localstorage Protection</td>
+        <td>Verify storage values are read-only from scripts</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-190</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] localstorage Protection</td>
+        <td>Verify token structure is valid JWT syntax</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-191</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] JWT Token Expiration</td>
+        <td>Verify backend API issues tokens with custom expiration timestamps</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-192</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] JWT Token Expiration</td>
+        <td>Verify API returns HTTP 401 when request token is expired</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-193</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] JWT Token Expiration</td>
+        <td>Verify client dashboard detects 401 and logs user out automatically</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-194</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] JWT Token Expiration</td>
+        <td>Verify expired tokens are rejected by all patient endpoints</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-195</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] JWT Token Expiration</td>
+        <td>Verify token validity signature is verified on server side</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-196</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] JWT Token Expiration</td>
+        <td>Verify client clears token storage when expiration occurs</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-197</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] JWT Token Expiration</td>
+        <td>Verify login does not reuse previous expired tokens</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">26 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-198</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] JWT Token Expiration</td>
+        <td>Verify request headers append Authorization Bearer scheme correctly</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-199</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] JWT Token Expiration</td>
+        <td>Verify authorization validation middleware is applied to API routes</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-200</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] JWT Token Expiration</td>
+        <td>Verify user profile route handles token validation securely</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-201</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Input XSS Sanitization</td>
+        <td>Verify patient name field prevents execution of injected script tags</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-202</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Input XSS Sanitization</td>
+        <td>Verify search query input sanitizes script commands</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-203</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Input XSS Sanitization</td>
+        <td>Verify dentist signup name input escapes HTML tags</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-204</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Input XSS Sanitization</td>
+        <td>Verify patient details forms strip malicious event handlers</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-205</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Input XSS Sanitization</td>
+        <td>Verify clinical comments inputs sanitise text contents</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-206</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Input XSS Sanitization</td>
+        <td>Verify dashboard rendering escapes all dynamically loaded values</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-207</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Input XSS Sanitization</td>
+        <td>Verify backend models validate input string character boundaries</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-208</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Input XSS Sanitization</td>
+        <td>Verify database insertion escapes special characters</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-209</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Input XSS Sanitization</td>
+        <td>Verify application renders SVG files securely without scripts</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-210</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Input XSS Sanitization</td>
+        <td>Verify HTTP response headers enforce script execution policies</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-211</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Auth Interceptors Header</td>
+        <td>Verify fetch requests contain Authorization header when authenticated</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-212</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Auth Interceptors Header</td>
+        <td>Verify headers do not expose developer credentials</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-213</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Auth Interceptors Header</td>
+        <td>Verify CORS origin configuration blocks unauthorized domains</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-214</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Auth Interceptors Header</td>
+        <td>Verify content type headers specify application/json</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-215</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Auth Interceptors Header</td>
+        <td>Verify headers prevent mime-sniffing configuration</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-216</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Auth Interceptors Header</td>
+        <td>Verify Cache-Control headers prevent browser caching of patient reports</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-217</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Auth Interceptors Header</td>
+        <td>Verify backend validates authorization header for every request</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-218</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Auth Interceptors Header</td>
+        <td>Verify custom endpoints require bearer token verification</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-219</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Auth Interceptors Header</td>
+        <td>Verify cross-site requests are blocked by browser policy defaults</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-220</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Auth Interceptors Header</td>
+        <td>Verify request headers include connection lifecycle details</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-221</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Password Hashing Fallback</td>
+        <td>Verify database never stores plaintext dentist passwords</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-222</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Password Hashing Fallback</td>
+        <td>Verify password hashing uses bcrypt with solid work factors</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-223</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Password Hashing Fallback</td>
+        <td>Verify authentication compares hashed passwords using secure verifiers</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-224</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Password Hashing Fallback</td>
+        <td>Verify password update endpoint hashes new password securely</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-225</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Password Hashing Fallback</td>
+        <td>Verify signup fails if password field cannot be hashed properly</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-226</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Password Hashing Fallback</td>
+        <td>Verify verification handles salt variations safely</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-227</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Password Hashing Fallback</td>
+        <td>Verify password reset triggers hash generation correctly</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-228</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Password Hashing Fallback</td>
+        <td>Verify database verification checks hash structures</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-229</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Password Hashing Fallback</td>
+        <td>Verify algorithm structures match FastAPI auth defaults</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">1 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-230</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Security] Password Hashing Fallback</td>
+        <td>Verify password verification performance is optimal</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-231</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Age Ranges</td>
+        <td>Verify age value of 1 is accepted in patient creation</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-232</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Age Ranges</td>
+        <td>Verify age value of 120 is accepted in patient creation</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-233</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Age Ranges</td>
+        <td>Verify age value of 0 is rejected with boundary errors</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-234</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Age Ranges</td>
+        <td>Verify negative age numbers are rejected by validators</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-235</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Age Ranges</td>
+        <td>Verify non-integer age values are rounded or rejected</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-236</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Age Ranges</td>
+        <td>Verify age values greater than 150 trigger warning checks</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-237</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Age Ranges</td>
+        <td>Verify empty age input triggers validation feedback</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-238</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Age Ranges</td>
+        <td>Verify age boundary is validated on demographics updates</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-239</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Age Ranges</td>
+        <td>Verify backend API enforces database age validations</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-240</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Age Ranges</td>
+        <td>Verify mobile forms handle age input restriction checks</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-241</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Plaque Percentage</td>
+        <td>Verify plaque index of 0% is accepted as a valid clinical input</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-242</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Plaque Percentage</td>
+        <td>Verify plaque index of 100% is accepted as a valid clinical input</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-243</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Plaque Percentage</td>
+        <td>Verify plaque index of -1% is rejected by input fields</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-244</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Plaque Percentage</td>
+        <td>Verify plaque index of 101% is rejected by forms</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-245</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Plaque Percentage</td>
+        <td>Verify plaque slider steps match whole integer increments</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-246</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Plaque Percentage</td>
+        <td>Verify typing plaque value manually validates range parameters</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-247</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Plaque Percentage</td>
+        <td>Verify plaque data values render correctly on timelines</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-248</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Plaque Percentage</td>
+        <td>Verify backend models enforce plaque percentage limit ranges</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-249</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Plaque Percentage</td>
+        <td>Verify empty plaque input defaults to reasonable baseline value</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-250</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Plaque Percentage</td>
+        <td>Verify plaque index is parsed correctly as floating number</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-251</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries BOP Percentage</td>
+        <td>Verify Bleeding on Probing index of 0% is accepted</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-252</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries BOP Percentage</td>
+        <td>Verify Bleeding on Probing index of 100% is accepted</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-253</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries BOP Percentage</td>
+        <td>Verify BOP index of -1% triggers input validation error</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-254</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries BOP Percentage</td>
+        <td>Verify BOP index of 101% is blocked by form validator rules</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-255</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries BOP Percentage</td>
+        <td>Verify BOP percentage is calculated correctly in history timeline</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-256</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries BOP Percentage</td>
+        <td>Verify BOP slider input coordinates with simulator variables</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-257</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries BOP Percentage</td>
+        <td>Verify backend API rejects invalid BOP percentages in payload requests</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-258</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries BOP Percentage</td>
+        <td>Verify float values for BOP are accepted if within range</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-259</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries BOP Percentage</td>
+        <td>Verify BOP values update forecast parameters instantly</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-260</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries BOP Percentage</td>
+        <td>Verify UI highlights high BOP values exceeding clinical safety thresholds</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-261</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Bone Loss Limit</td>
+        <td>Verify bone loss average of 0.0mm is accepted</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-262</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Bone Loss Limit</td>
+        <td>Verify bone loss average of 12.0mm is accepted as upper limit</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-263</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Bone Loss Limit</td>
+        <td>Verify bone loss average of -0.1mm is rejected by input forms</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-264</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Bone Loss Limit</td>
+        <td>Verify bone loss values greater than 15mm are blocked</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-265</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Bone Loss Limit</td>
+        <td>Verify decimal precision supports up to one decimal point (e.g. 1.5mm)</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-266</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Bone Loss Limit</td>
+        <td>Verify bone loss averages update line charts instantly</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-267</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Bone Loss Limit</td>
+        <td>Verify backend database restricts bone loss field validations</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-268</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Bone Loss Limit</td>
+        <td>Verify bone loss input handles empty string inputs safely</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-269</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Bone Loss Limit</td>
+        <td>Verify bone loss average matches clinical record parameters in list</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-270</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Bone Loss Limit</td>
+        <td>Verify bone loss value affects AAP staging definitions</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-271</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Attachment Loss Limit</td>
+        <td>Verify attachment loss average of 0.0mm is accepted</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-272</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Attachment Loss Limit</td>
+        <td>Verify attachment loss average of 15.0mm is accepted as upper boundary</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-273</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Attachment Loss Limit</td>
+        <td>Verify attachment loss average of -0.1mm is rejected</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-274</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Attachment Loss Limit</td>
+        <td>Verify attachment loss values greater than 20mm are blocked by form validator</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-275</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Attachment Loss Limit</td>
+        <td>Verify decimal formatting constraints allow values like 2.35mm</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-276</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Attachment Loss Limit</td>
+        <td>Verify attachment loss parameters update LSTM forecast outputs</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-277</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Attachment Loss Limit</td>
+        <td>Verify attachment loss data structures align with database schema</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-278</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Attachment Loss Limit</td>
+        <td>Verify validation feedback displays for invalid attachment loss averages</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-279</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Attachment Loss Limit</td>
+        <td>Verify attachment loss updates update demographics reports</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-280</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Validation] Boundaries Attachment Loss Limit</td>
+        <td>Verify attachment loss average fields default correctly on form resets</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-281</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Compatibility] Viewport Scaling Tests</td>
+        <td>Verify viewport width of 1920px displays full dashboard layouts</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-282</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Compatibility] Viewport Scaling Tests</td>
+        <td>Verify viewport width of 1366px scales elements cleanly</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">5 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-283</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Compatibility] Viewport Scaling Tests</td>
+        <td>Verify viewport width of 1024px displays tablet styling layouts</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-284</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Compatibility] Viewport Scaling Tests</td>
+        <td>Verify viewport width of 768px wraps sidebar into mobile menu view</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">3 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-285</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Compatibility] Viewport Scaling Tests</td>
+        <td>Verify viewport width of 375px renders portrait layout configurations</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">4 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-286</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Compatibility] Viewport Scaling Tests</td>
+        <td>Verify font sizing scales properly across screen resolution settings</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-287</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Compatibility] Viewport Scaling Tests</td>
+        <td>Verify SVG line charts resize dynamically on container width changes</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">8 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-288</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Compatibility] Viewport Scaling Tests</td>
+        <td>Verify buttons and touch targets stay at least 44x44px for accessibility</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-289</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Compatibility] Viewport Scaling Tests</td>
+        <td>Verify layouts do not overflow horizontally on small screens</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-290</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Compatibility] Viewport Scaling Tests</td>
+        <td>Verify overlay modals position themselves centrally in all device viewports</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-291</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Performance] Response Timing Checks</td>
+        <td>Verify login page loads resources in under 1 second</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">28 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-292</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Performance] Response Timing Checks</td>
+        <td>Verify patient record retrieval API call executes in under 200ms</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-293</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Performance] Response Timing Checks</td>
+        <td>Verify periodontal simulation updates complete rendering under 100ms</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">10 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-294</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Performance] Response Timing Checks</td>
+        <td>Verify search operations filter list elements under 50ms</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">7 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-295</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Performance] Response Timing Checks</td>
+        <td>Verify switching tabs triggers DOM rendering changes immediately</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-296</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Performance] Response Timing Checks</td>
+        <td>Verify assets and icons load asynchronously without blocking page flow</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-297</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Performance] Response Timing Checks</td>
+        <td>Verify CSS animations run at steady 60 frames per second</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-298</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Performance] Response Timing Checks</td>
+        <td>Verify database operations response delays stay minimal under normal loads</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-299</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Performance] Response Timing Checks</td>
+        <td>Verify logout cleaning completes in under 10ms</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">9 ms</td>
+      </tr>
+      
+    
+      <tr class="row-pass"  >
+        <td>PT-E2E-300</td>
+        <td><span class="badge badge-type">PerioTwin Web E2E Suite</span></td>
+        <td>[Performance] Response Timing Checks</td>
+        <td>Verify application bundle runs cleanly without resource memory leaks</td>
+        <td><span class="badge badge-pass">Pass</span></td>
+        <td style="text-align: right;">6 ms</td>
+      </tr>
+      
+    
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+</body>
+</html>
+  

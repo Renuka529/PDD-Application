@@ -1,0 +1,27 @@
+# PerioTwin Testing Integration Tasks
+
+- [x] Create Web E2E (Selenium) test directory structure
+  - [x] Implement `PerioTwinE2E/utils/excelReporter.js` using `exceljs`
+  - [x] Implement `PerioTwinE2E/utils/htmlReportGenerator.js`
+  - [x] Implement `PerioTwinE2E/tests/mega_web_300.test.js` (300+ assertions)
+- [x] Create Web & Backend Security Review Scripts
+  - [x] Implement `PerioTwinE2E/scripts/generateWebSecuritySuite.js`
+  - [x] Implement `PerioTwin/server/scripts/generateSecuritySuite.js`
+- [x] Create Backend Unit Testing Suite
+  - [x] Implement `server/tests/test_api.py` using `pytest` and `TestClient`
+  - [x] Integrate backend unit test run into GitHub Actions
+- [x] Create Mobile Appium Testing directory structure
+  - [x] Implement `PerioTwinAppium/tests/12_e2e/mega_android_300.test.js`
+  - [x] Implement `PerioTwinAppium/utils/xlsxReporter.js`
+  - [x] Implement `PerioTwinAppium/utils/generateHtmlReport.js` and `generateSummary.js`
+  - [x] Implement `PerioTwinAppium/wdio.conf.js`
+  - [x] Implement `PerioTwinAppium/scripts/ci_run_tests.sh` and fallback generators
+- [x] Create API Load Testing (k6) Scripts
+  - [x] Implement `PerioTwin/server/scripts/load-test.js`
+  - [x] Implement `PerioTwin/server/scripts/parseK6Summary.js`
+- [x] Create GitHub Actions Workflows
+  - [x] Create `.github/workflows/deploy-and-test.yml`
+  - [x] Create `.github/workflows/security-review.yml`
+  - [x] Create `.github/workflows/android-e2e.yml`
+  - [x] Create `.github/workflows/load-test.yml`
+- [x] Verify execution outputs and generate walkthrough report

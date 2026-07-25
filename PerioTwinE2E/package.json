@@ -1,0 +1,15 @@
+{
+  "name": "periotwin-e2e",
+  "version": "1.0.0",
+  "description": "Selenium E2E tests for PerioTwin Web Application",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "mocha tests/**/*.test.js --reporter utils/excelReporter.js --timeout 120000"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "mocha": "^10.4.0",
+    "selenium-webdriver": "^4.20.0"
+  }
+}
