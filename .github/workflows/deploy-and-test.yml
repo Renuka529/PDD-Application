@@ -91,18 +91,3 @@ jobs:
         with:
           name: Selenium-E2E-Excel-Report
           path: PerioTwinE2E/Test_Results/*.xlsx
-
-      - name: Setup Pages
-        continue-on-error: true
-        uses: actions/configure-pages@v4
-
-      - name: Upload Pages Artifact
-        continue-on-error: true
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: 'client/dist'
-
-      - name: Deploy to GitHub Pages
-        continue-on-error: true
-        id: deployment
-        uses: actions/deploy-pages@v4
