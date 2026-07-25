@@ -54,3 +54,5 @@ jobs:
         with:
           name: Android-Appium-Excel-Report
           path: PerioTwinAppium/Test_Results/*.xlsx
+
+# Trigger android application testing run
