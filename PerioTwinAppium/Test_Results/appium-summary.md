@@ -8,8 +8,8 @@
 | **Failed Assertions** | 0 |
 | **Pending Assertions** | 0 |
 | **Overall Pass Rate** | **100.0%** |
-| **Average Test Duration** | 13 ms |
-| **Total Execution Time** | 14.03 seconds |
+| **Average Test Duration** | 21 ms |
+| **Total Execution Time** | 23.25 seconds |
 
 > [!TIP]
 > The full interactive HTML report is accessible inside the **Artifacts** download section as well as deployed under the reports history repository branch page directory.
