@@ -233,6 +233,10 @@ async function writeExcelReport(tests, stats) {
   await workbook.xlsx.writeFile(excelPath);
   console.log(`Saved Excel report to: ${excelPath}`);
 
+  const timestampedPath = path.join(reportsDir, 'E2E_Test_Report_PerioTwin.xlsx');
+  await workbook.xlsx.writeFile(timestampedPath);
+  console.log(`Saved Excel report to: ${timestampedPath}`);
+
   // Generate HTML Report
   generateHtmlReport(tests, stats, reportsDir);
 }
