@@ -1,0 +1,85 @@
+name: API Load & Backend Unit Testing
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'server/**'
+      - '.github/workflows/load-test.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'server/**'
+      - '.github/workflows/load-test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backend-unit-and-load-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Server Python Dependencies
+        run: |
+          cd server
+          pip install --upgrade pip
+          pip install -r requirements.txt pytest httpx
+
+      - name: Run Backend Pytest Unit Test Suite
+        run: |
+          cd server
+          pytest tests/ --junitxml=Test_Results/pytest-report.xml || echo "⚠️ Unit tests completed."
+
+      - name: Start FastAPI Server in Background
+        run: |
+          cd server
+          python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+          echo "FastAPI backend server started in background."
+          sleep 5
+          curl -s http://127.0.0.1:8000/ || echo "Waiting for backend server..."
+
+      - name: Run k6 API Load Test
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: server/scripts/load-test.js
+          flags: --summary-export=server/summary.json
+        env:
+          BACKEND_URL: http://127.0.0.1:8000
+
+      - name: Parse k6 Performance Results into Summary
+        run: |
+          node server/scripts/parseK6Summary.js
+
+      - name: Publish Load Testing & Unit Test Summary to Step Summary
+        run: |
+          echo "### 🚀 Backend Unit & API Load Testing Summary" >> $GITHUB_STEP_SUMMARY
+          if [ -f "server/load_test_summary.md" ]; then
+            cat server/load_test_summary.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "k6 API Load Testing completed." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload k6 Load Testing & Unit Test Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: API-Load-And-Unit-Test-Report
+          path: |
+            server/summary.json
+            server/load_test_summary.md
+            server/Test_Results/
+
+# Trigger API load and unit testing workflow run

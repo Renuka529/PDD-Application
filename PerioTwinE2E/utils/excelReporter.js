@@ -158,7 +158,60 @@ async function writeExcelReport(tests, stats) {
     });
   });
 
-  // --- SHEET 2: Testing Types Summary ---
+  // --- SHEET 2: Passed Test Cases ---
+  const sheetPassed = workbook.addWorksheet('Passed Test Cases');
+  sheetPassed.views = [{ showGridLines: true }];
+
+  sheetPassed.columns = [
+    { header: 'Test ID', key: 'id', width: 12 },
+    { header: 'Testing Type', key: 'type', width: 15 },
+    { header: 'Category', key: 'category', width: 25 },
+    { header: 'Test Case Description', key: 'title', width: 45 },
+    { header: 'Status', key: 'status', width: 12 },
+    { header: 'Duration (ms)', key: 'duration', width: 15 },
+    { header: 'Timestamp', key: 'timestamp', width: 24 }
+  ];
+
+  const headerRowPassed = sheetPassed.getRow(1);
+  headerRowPassed.height = 25;
+  headerRowPassed.eachCell((cell) => {
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF047857' } // Emerald green header
+    };
+    cell.font = {
+      color: { argb: 'FFFFFFFF' },
+      bold: true,
+      size: 11
+    };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+  });
+
+  const passedTests = tests.filter(t => t.status === 'Pass');
+  passedTests.forEach((t) => {
+    const row = sheetPassed.addRow(t);
+    row.height = 20;
+    row.getCell('id').alignment = { horizontal: 'center', vertical: 'middle' };
+    row.getCell('type').alignment = { horizontal: 'center', vertical: 'middle' };
+    row.getCell('status').alignment = { horizontal: 'center', vertical: 'middle' };
+    row.getCell('duration').alignment = { horizontal: 'right', vertical: 'middle' };
+    row.getCell('timestamp').alignment = { horizontal: 'center', vertical: 'middle' };
+
+    const statusCell = row.getCell('status');
+    statusCell.font = { color: { argb: 'FF047857' }, bold: true };
+
+    row.eachCell((cell) => {
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+        bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+        left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+        right: { style: 'thin', color: { argb: 'FFE5E7EB' } }
+      };
+    });
+  });
+
+  // --- SHEET 3: Testing Types Summary ---
   const sheet2 = workbook.addWorksheet('Testing Types Summary');
   sheet2.views = [{ showGridLines: true }];
 

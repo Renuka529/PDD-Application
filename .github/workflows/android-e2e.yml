@@ -1,4 +1,4 @@
-name: Android Application Testing
+name: Android Appium Application Testing
 
 on:
   push:

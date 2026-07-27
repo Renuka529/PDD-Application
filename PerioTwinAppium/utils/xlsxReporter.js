@@ -195,6 +195,48 @@ class XlsxReporter {
       });
     });
 
+    // --- SHEET 4: Passed Test Cases ---
+    const sheet4 = workbook.addWorksheet('Passed Test Cases');
+    sheet4.views = [{ showGridLines: true }];
+    sheet4.columns = [
+      { header: 'Test ID', key: 'id', width: 12 },
+      { header: 'Category', key: 'category', width: 25 },
+      { header: 'Test Case Title', key: 'title', width: 45 },
+      { header: 'Status', key: 'status', width: 12 },
+      { header: 'Duration (ms)', key: 'duration', width: 15 },
+      { header: 'Timestamp', key: 'timestamp', width: 24 }
+    ];
+
+    const headerRow4 = sheet4.getRow(1);
+    headerRow4.height = 25;
+    headerRow4.eachCell(cell => {
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF047857' } }; // Emerald green header
+      cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+    const passedAppiumTests = this.tests.filter(t => t.status === 'Pass');
+    passedAppiumTests.forEach(t => {
+      const row = sheet4.addRow(t);
+      row.height = 20;
+      row.getCell('id').alignment = { horizontal: 'center', vertical: 'middle' };
+      row.getCell('status').alignment = { horizontal: 'center', vertical: 'middle' };
+      row.getCell('duration').alignment = { horizontal: 'right', vertical: 'middle' };
+      row.getCell('timestamp').alignment = { horizontal: 'center', vertical: 'middle' };
+
+      const statusCell = row.getCell('status');
+      statusCell.font = { color: { argb: 'FF047857' }, bold: true };
+
+      row.eachCell(cell => {
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
+        };
+      });
+    });
+
     await workbook.xlsx.writeFile(outputPath);
     console.log(`Saved Appium report Excel to: ${outputPath}`);
   }

@@ -12,10 +12,10 @@ export const options = {
 
 export default function () {
   const url = __ENV.BACKEND_URL || 'http://localhost:8000';
-  
+
   // Perform simple heartbeat probe
   const response = http.get(`${url}/`);
-  
+
   check(response, {
     'status is 200': (r) => r.status === 200,
     'body has online status': (r) => {
